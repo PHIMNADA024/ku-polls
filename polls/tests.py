@@ -30,6 +30,63 @@ class QuestionModelTests(TestCase):
         recent_question = Question(pub_date=time)
         self.assertIs(recent_question.was_published_recently(), True)
 
+    def test_is_published_with_future_question(self):
+        """
+        is_published() returns False for questions whose pub_date is in the future.
+        """
+        future_time = timezone.now() + datetime.timedelta(days=30)
+        future_question = Question(pub_date=future_time)
+        self.assertIs(future_question.is_published(), False)
+
+    def test_is_published_with_default_pub_date(self):
+        """
+        is_published() returns True for questions with the default pub_date (now).
+        """
+        question = Question(pub_date=timezone.now())
+        self.assertIs(question.is_published(), True)
+
+    def test_is_published_with_past_question(self):
+        """
+        is_published() returns True for questions whose pub_date is in the past.
+        """
+        past_time = timezone.now() - datetime.timedelta(days=30)
+        past_question = Question(pub_date=past_time)
+        self.assertIs(past_question.is_published(), True)
+
+    def test_can_vote_before_start_date(self):
+        """
+        can_vote() returns False if current time is before the pub_date.
+        """
+        future_time = timezone.now() + datetime.timedelta(days=1)
+        question = Question(pub_date=future_time)
+        self.assertIs(question.can_vote(), False)
+
+    def test_can_vote_within_voting_period(self):
+        """
+        can_vote() returns True if the current time is between pub_date and end_date.
+        """
+        pub_time = timezone.now() - datetime.timedelta(days=1)
+        end_time = timezone.now() + datetime.timedelta(days=1)
+        question = Question(pub_date=pub_time, end_date=end_time)
+        self.assertIs(question.can_vote(), True)
+
+    def test_cannot_vote_after_end_date(self):
+        """
+        can_vote() returns False if current time is after the end_date.
+        """
+        pub_time = timezone.now() - datetime.timedelta(days=2)
+        end_time = timezone.now() - datetime.timedelta(days=1)
+        question = Question(pub_date=pub_time, end_date=end_time)
+        self.assertIs(question.can_vote(), False)
+
+    def test_can_vote_with_no_end_date(self):
+        """
+        can_vote() returns True if there is no end_date and current time is after pub_date.
+        """
+        pub_time = timezone.now() - datetime.timedelta(days=1)
+        question = Question(pub_date=pub_time, end_date=None)
+        self.assertIs(question.can_vote(), True)
+
 
 def create_question(question_text, days):
     """
