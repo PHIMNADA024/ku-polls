@@ -1,3 +1,4 @@
+from django.contrib import messages
 from django.http import HttpResponseRedirect
 from django.shortcuts import get_object_or_404, render
 from django.urls import reverse
@@ -27,6 +28,13 @@ class DetailView(generic.DetailView):
         """
         published_question_list = [q.pk for q in Question.objects.all() if q.is_published()]
         return Question.objects.filter(pk__in=published_question_list)
+
+    def get(self, request, *args, **kwargs):
+        question = self.get_object()
+        if not question.can_vote():
+            messages.error(request, "Voting is not allowed for this question.")
+            return HttpResponseRedirect(reverse('polls:index'))
+        return super().get(request, *args, **kwargs)
 
 
 class ResultsView(generic.DetailView):
