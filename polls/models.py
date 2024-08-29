@@ -42,7 +42,8 @@ class Question(models.Model):
 
     def is_published(self):
         """
-        Returns True if the current local date/time is on or after the question’s pub_date.
+        Returns True if the current local date/time is on
+        or after the question’s pub_date.
         """
         now = timezone.now()
         return now >= self.pub_date
@@ -60,7 +61,8 @@ class Question(models.Model):
 class Choice(models.Model):
     """
     Represents a choice in a poll question.
-    Each choice is a part of  a specific question and has its own text and vote count.
+    Each choice is a part of  a specific question
+    and has its own text and vote count.
     """
     question = models.ForeignKey(Question, on_delete=models.CASCADE)
     choice_text = models.CharField(max_length=200)
