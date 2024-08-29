@@ -27,6 +27,15 @@ class IndexView(generic.ListView):
         sorted_questions = published_questions.order_by('-pub_date')[:5]
         return sorted_questions
 
+    def get_context_data(self, **kwargs):
+        """
+        Add the status of each question to the context.
+        """
+        context = super().get_context_data(**kwargs)
+        for question in context['latest_question_list']:
+            question.status = 'Open' if question.can_vote() else 'Closed'
+        return context
+
 
 class DetailView(generic.DetailView):
     """
