@@ -1,7 +1,31 @@
-li a {
+h1, a {
     color: white;
 }
 body {
     background: white url("images/background.png") no-repeat;
     background-size: cover;
+}
+.alert {
+    background-color: red;
+    color: white;
+    text-align: center;
+    padding: 3px;
+}
+.vote_count{
+    text-align: center;
+}
+.choice_text{
+    color: white;
+}
+.status {
+    font-weight: bold;
+    color: white;
+    margin-left: 10px;
+}
+table, th, td {
+    border: 1px solid;
+    border-color: white;
+    border-collapse: collapse;
+    color: white;
+    padding: 5px;
 }
