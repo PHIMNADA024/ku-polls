@@ -1,5 +1,16 @@
 {% load static %}
 <link rel="stylesheet" href="{% static 'polls/style.css' %}">
+<div class="topic">
+    <h1 >KU Polls</h1>
+</div>
+
+<div class="status">
+{% if user.is_authenticated %}
+   Welcome back, {{ user.username }}
+{% else %}
+   Please <a href="{% url 'login' %}?next={{request.path}}">Login</a>
+{% endif %}
+</div>
 
 {% if messages %}
             {% for message in messages %}
@@ -22,3 +33,8 @@
 {% else %}
     <p>No polls are available.</p>
 {% endif %}
+
+<form action="{% url 'logout' %}" method="post">
+   {% csrf_token %}
+  <button type="submit">Log Out</button>
+</form>

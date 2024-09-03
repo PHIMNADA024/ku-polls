@@ -5,6 +5,10 @@ body {
     background: white url("images/background.png") no-repeat;
     background-size: cover;
 }
+.topic{
+    color: white;
+    text-align: center;
+}
 .alert {
     background-color: red;
     color: white;
