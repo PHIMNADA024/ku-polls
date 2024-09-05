@@ -7,7 +7,7 @@ from django.shortcuts import get_object_or_404, render
 from django.urls import reverse
 from django.views import generic
 from django.contrib.auth.decorators import login_required
-from .models import Choice, Question
+from .models import Choice, Question, Vote
 
 
 class IndexView(generic.ListView):
@@ -88,11 +88,7 @@ def vote(request, question_id):
     Handle voting for a specific question.
     """
     question = get_object_or_404(Question, pk=question_id)
-    if not question.can_vote():
-        return render(request, 'polls/detail.html', {
-            'question': question,
-            'error_message': "Voting is not allowed for this question.",
-        })
+
     try:
         selected_choice = question.choice_set.get(pk=request.POST['choice'])
     except (KeyError, Choice.DoesNotExist):
@@ -100,8 +96,22 @@ def vote(request, question_id):
             'question': question,
             'error_message': "You didn't select a choice.",
         })
-    else:
-        selected_choice.votes += 1
-        selected_choice.save()
-        return HttpResponseRedirect(reverse('polls:results',
-                                            args=(question_id,)))
+
+    # References to the current user
+    this_user = request.user
+
+    # Get the user's vote
+    try:
+        vote = Vote.objects.get(user=this_user, choice__question=question)
+        # user has a vote for this question! Update his choice.
+        vote.choice = selected_choice
+        vote.save()
+        messages.success(request, f"Your vote was updated to '{selected_choice.choice_text}'")
+    except Vote.DoesNotExist:
+        # does not have a vote yet
+        Vote.objects.create(user=this_user, choice=selected_choice)
+        # automatically saved
+        messages.success(request, f"You voted for '{selected_choice.choice_text}'")
+
+    return HttpResponseRedirect(reverse('polls:results',
+                                        args=(question_id,)))
