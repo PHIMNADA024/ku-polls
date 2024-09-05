@@ -1,4 +1,4 @@
-h1, a {
+h1, h2, a {
     color: white;
 }
 body {
@@ -20,6 +20,45 @@ body {
 }
 .choice_text{
     color: white;
+}
+.log_button {
+    background-color: #e0e7fb;
+    border: none;
+    color: black;
+    padding: 15px;
+    text-align: center;
+    border-radius: 5px;
+    position: absolute;
+    margin: 10px;
+    top: 0;
+    right: 0;
+    text-decoration: none;
+}
+.log_button:hover {
+    background-color: #7494ec;
+    transition: 0.1s;
+}
+.button {
+    background-color: #e0e7fb;
+    border: none;
+    color: black;
+    padding: 15px;
+    text-align: center;
+    border-radius: 5px;
+    margin: 10px;
+}
+.button:hover {
+    background-color: #7494ec;
+    transition: 0.1s;
+}
+.confirm_text {
+    background-color: red;
+    color: white;
+    text-align: center;
+    padding: 10px;
+    margin: 0 auto;
+    max-width: 400px;
+    border-radius: 5px;
 }
 .status {
     font-weight: bold;
