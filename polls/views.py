@@ -2,7 +2,7 @@
 This file contains views for handling polling functionality in KU Polls.
 """
 from django.contrib import messages
-from django.http import HttpResponseRedirect
+from django.http import HttpResponseRedirect, Http404
 from django.shortcuts import get_object_or_404, render
 from django.urls import reverse
 from django.views import generic
@@ -59,11 +59,20 @@ class DetailView(generic.DetailView):
         Redirect to the index page with an error message
         if voting is not allowed.
         """
-        question = self.get_object()
+        try:
+            question = self.get_object()
+        except Http404:
+            messages.error(request, "This question is not available.")
+            return HttpResponseRedirect(reverse('polls:index'))
         if not question.can_vote():
             messages.error(request, "Voting is not allowed for this question.")
             return HttpResponseRedirect(reverse('polls:index'))
-        return super().get(request, *args, **kwargs)
+        this_user = request.user
+        try:
+            last_vote = Vote.objects.get(user=this_user, choice__question=question).choice.id
+        except Vote.DoesNotExist:
+            last_vote = 0
+        return render(request, self.template_name, {'question': question, 'last_vote': last_vote})
 
 
 class ResultsView(generic.DetailView):
