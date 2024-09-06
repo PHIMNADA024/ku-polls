@@ -59,8 +59,10 @@ class DetailView(generic.DetailView):
     def get(self, request, *args, **kwargs):
         """
         Handle GET requests for the detail view of a question.
-        Redirect to the index page with an error message
-        if voting is not allowed.
+
+        If the question cannot be voted on, the user is redirected to the
+        index page with an error message. If the user is authenticated, their
+        last vote for the question is shown, if available.
         """
         try:
             question = self.get_object()
@@ -149,17 +151,26 @@ def vote(request, question_id):
 
 @receiver(user_logged_in)
 def log_user_login(request, user, **kwargs):
+    """
+    Log a message when a user successfully logs in.
+    """
     ip_address = get_client_ip(request)
     logger.info(f'{user} logged in from {ip_address}')
 
 
 @receiver(user_logged_out)
 def log_user_logout(request, user, **kwargs):
+    """
+    Log a message when a user successfully logs out.
+    """
     ip_address = get_client_ip(request)
     logger.info(f'{user} logged out from {ip_address}')
 
 
 @receiver(user_login_failed)
 def log_user_login_failed(request, **kwargs):
+    """
+    Log a message when a user login attempt fails.
+    """
     ip_address = get_client_ip(request)
     logger.warning(f'User failed to log in from {ip_address}')
