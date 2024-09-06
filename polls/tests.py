@@ -6,7 +6,9 @@ import datetime
 from django.test import TestCase
 from django.utils import timezone
 from django.urls import reverse
-from .models import Question
+from .models import Question, Choice, Vote
+from django.contrib.auth.models import User
+from mysite import settings
 
 
 class QuestionModelTests(TestCase):
@@ -180,12 +182,12 @@ class QuestionDetailViewTests(TestCase):
     def test_future_question(self):
         """
         The detail view of a question with a pub_date
-        in the future returns a 404 not found.
+        in the future redirect to the index page.
         """
         future_question = create_question(question_text='Future question.', days=5)
         url = reverse('polls:detail', args=(future_question.id,))
         response = self.client.get(url)
-        self.assertEqual(response.status_code, 404)
+        self.assertEqual(response.status_code, 302)
 
     def test_past_question(self):
         """
@@ -196,3 +198,118 @@ class QuestionDetailViewTests(TestCase):
         url = reverse('polls:detail', args=(past_question.id,))
         response = self.client.get(url)
         self.assertContains(response, past_question.question_text)
+
+
+class UserAuthTest(TestCase):
+
+    def setUp(self):
+        # superclass setUp creates a Client object and initializes test database
+        super().setUp()
+        self.username = "test_user"
+        self.password = "FatChance!"
+        self.user1 = User.objects.create_user(
+            username=self.username,
+            password=self.password,
+            email="testuser@nowhere.com"
+        )
+        self.user1.first_name = "Tester"
+        self.user1.save()
+        # we need a poll question to test voting
+        q = Question.objects.create(question_text="First Poll Question")
+        q.save()
+        # a few choices
+        for n in range(1, 4):
+            choice = Choice(choice_text=f"Choice {n}", question=q)
+            choice.save()
+        self.question = q
+
+    def test_user_can_logout(self):
+        """A user can log out using the logout url.
+
+        As an authenticated user,
+        when I visit /accounts/logout/
+        then I am logged out
+        and then redirected to the login page.
+        """
+        logout_url = reverse("logout")
+        self.assertTrue(
+            self.client.login(username=self.username, password=self.password)
+        )
+        response = self.client.post(logout_url)
+        self.assertEqual(302, response.status_code)
+        self.assertRedirects(response, reverse(settings.LOGOUT_REDIRECT_URL))
+
+    def test_login_view(self):
+        """A user can log in using the login view."""
+        login_url = reverse("login")
+        response = self.client.get(login_url)
+        self.assertEqual(200, response.status_code)
+        form_data = {"username": "test_user",
+                     "password": "FatChance!"
+                     }
+        response = self.client.post(login_url, form_data)
+        self.assertEqual(302, response.status_code)
+        self.assertRedirects(response, reverse(settings.LOGIN_REDIRECT_URL))
+
+    def test_auth_required_to_vote(self):
+        """Authentication is required to submit a vote.
+
+        As an unauthenticated user,
+        when I submit a vote for a question,
+        then I am redirected to the login page,
+        or I receive a 403 response (FORBIDDEN)
+        """
+        vote_url = reverse('polls:vote', args=[self.question.id])
+
+        choice = self.question.choice_set.first()
+        form_data = {"choice": f"{choice.id}"}
+        response = self.client.post(vote_url, form_data)
+        self.assertEqual(response.status_code, 302)
+        login_with_next = f"{reverse('login')}?next={vote_url}"
+        self.assertRedirects(response, login_with_next)
+
+
+class VoteLimitTests(TestCase):
+    def setUp(self):
+        """
+        Set up data for testing voting behavior.
+        """
+        # Create a user for the test
+        self.user = User.objects.create_user(username='test_user', password='password')
+        # Create a question and two choices for the test
+        self.question = Question.objects.create(
+            question_text='Test Question', pub_date=timezone.now()
+        )
+        self.choice1 = Choice.objects.create(choice_text='Choice 1', question=self.question)
+        self.choice2 = Choice.objects.create(choice_text='Choice 2', question=self.question)
+
+    def test_user_can_vote_once(self):
+        """
+        Ensure that a user can only vote once for a question.
+        """
+        self.client.login(username='test_user', password='password')
+        vote_url = reverse('polls:vote', args=[self.question.id])
+
+        # First vote
+        response = self.client.post(vote_url, {'choice': self.choice1.id})
+        self.assertEqual(response.status_code, 302)  # Should redirect to results page
+
+        # Attempt to change vote
+        response = self.client.post(vote_url, {'choice': self.choice2.id})
+        self.assertEqual(response.status_code, 302)  # Should still redirect to results
+
+        # Verify that only one vote exists for the user, and it's updated to choice2
+        self.assertEqual(Vote.objects.filter(user=self.user, choice__question=self.question).count(), 1)
+        updated_vote = Vote.objects.get(user=self.user, choice__question=self.question)
+        self.assertEqual(updated_vote.choice, self.choice2)
+
+    def test_anonymous_user_cannot_vote(self):
+        """
+        Ensure that an anonymous (unauthenticated) user is redirected to login page when trying to vote.
+        """
+        vote_url = reverse('polls:vote', args=[self.question.id])
+        response = self.client.post(vote_url, {'choice': self.choice1.id})
+        self.assertEqual(response.status_code, 302)  # Should redirect to log in
+
+        login_url_with_next = f"{reverse('login')}?next={vote_url}"
+        self.assertRedirects(response, login_url_with_next)

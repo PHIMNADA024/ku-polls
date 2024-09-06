@@ -1,6 +1,23 @@
 {% load static %}
 <link rel="stylesheet" href="{% static 'polls/style.css' %}">
 
+<div>
+    {% if user.is_authenticated %}
+        <form action="{% url 'logout' %}" method="post">
+            {% csrf_token %}
+            <button type="submit" class="log_button">Log Out</button>
+        </form>
+    {% else %}
+        <a href="{% url 'login' %}?next={{request.path}}" class="log_button">Log in</a>
+    {% endif %}
+</div>
+
+{% if messages %}
+    {% for message in messages %}
+        <h2 class="confirm_text">{{ message }}</h2>
+    {% endfor %}
+{% endif %}
+
 <h1>{{ question.question_text }}</h1>
 <table>
     <tr>
@@ -15,4 +32,6 @@
     {% endfor %}
 </table>
 
-<a href="{% url 'polls:index' %}">Back to List of Polls</a>
+<div style="margin-top: 30px;">
+    <a href="{% url 'polls:index' %}" class="button">Back to List of Polls</a>
+</div>
