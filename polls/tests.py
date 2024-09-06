@@ -6,7 +6,7 @@ import datetime
 from django.test import TestCase
 from django.utils import timezone
 from django.urls import reverse
-from .models import Question, Choice
+from .models import Question, Choice, Vote
 from django.contrib.auth.models import User
 from mysite import settings
 
@@ -267,3 +267,49 @@ class UserAuthTest(TestCase):
         self.assertEqual(response.status_code, 302)
         login_with_next = f"{reverse('login')}?next={vote_url}"
         self.assertRedirects(response, login_with_next)
+
+
+class VoteLimitTests(TestCase):
+    def setUp(self):
+        """
+        Set up data for testing voting behavior.
+        """
+        # Create a user for the test
+        self.user = User.objects.create_user(username='test_user', password='password')
+        # Create a question and two choices for the test
+        self.question = Question.objects.create(
+            question_text='Test Question', pub_date=timezone.now()
+        )
+        self.choice1 = Choice.objects.create(choice_text='Choice 1', question=self.question)
+        self.choice2 = Choice.objects.create(choice_text='Choice 2', question=self.question)
+
+    def test_user_can_vote_once(self):
+        """
+        Ensure that a user can only vote once for a question.
+        """
+        self.client.login(username='test_user', password='password')
+        vote_url = reverse('polls:vote', args=[self.question.id])
+
+        # First vote
+        response = self.client.post(vote_url, {'choice': self.choice1.id})
+        self.assertEqual(response.status_code, 302)  # Should redirect to results page
+
+        # Attempt to change vote
+        response = self.client.post(vote_url, {'choice': self.choice2.id})
+        self.assertEqual(response.status_code, 302)  # Should still redirect to results
+
+        # Verify that only one vote exists for the user, and it's updated to choice2
+        self.assertEqual(Vote.objects.filter(user=self.user, choice__question=self.question).count(), 1)
+        updated_vote = Vote.objects.get(user=self.user, choice__question=self.question)
+        self.assertEqual(updated_vote.choice, self.choice2)
+
+    def test_anonymous_user_cannot_vote(self):
+        """
+        Ensure that an anonymous (unauthenticated) user is redirected to login page when trying to vote.
+        """
+        vote_url = reverse('polls:vote', args=[self.question.id])
+        response = self.client.post(vote_url, {'choice': self.choice1.id})
+        self.assertEqual(response.status_code, 302)  # Should redirect to log in
+
+        login_url_with_next = f"{reverse('login')}?next={vote_url}"
+        self.assertRedirects(response, login_url_with_next)
