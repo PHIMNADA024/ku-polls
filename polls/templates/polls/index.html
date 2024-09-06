@@ -27,9 +27,13 @@
     <ul>
     {% for question in latest_question_list %}
         <li>
-            <a href="{% url 'polls:detail' question.id %}">{{ question.question_text }}</a>
-            <a href="{% url 'polls:results' question.id %}">Results</a>
-            <span class="status">({{ question.status }})</span>
+            <div class="question_box">
+                <a href="{% url 'polls:detail' question.id %}" class="question_text">{{ question.question_text }}</a>
+                <div style="margin-top: 10px">
+                    <a href="{% url 'polls:results' question.id %}" class="result_button">Results</a>
+                    <span class="status">({{ question.status }})</span>
+                </div>
+            </div>
         </li>
     {% endfor %}
     </ul>

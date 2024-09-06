@@ -1,5 +1,17 @@
-h1, h2, a {
+h1 {
     color: white;
+    font-size: 50px;
+}
+h2 {
+    color: white;
+    font-size: 30px;
+}
+a {
+    color: white;
+    width: 400px;
+}
+ul {
+    padding: 0;
 }
 body {
     background: white url("images/background.png") no-repeat;
@@ -8,6 +20,29 @@ body {
 .topic{
     color: white;
     text-align: center;
+}
+.question_box {
+    background: rgba(255, 255, 255, .8);
+    text-align: center;
+    color: black;
+    padding: 20px 5%;
+    margin: 20px 25%;
+    margin-bottom: 10px;
+    border-radius: 5px;
+}
+.question_text {
+    font-size: 24px;
+    color: black;
+    text-decoration: none;
+}
+.result_button {
+    background-color: #e0e7fb;
+    font-size: 20px;
+    color: black;
+    text-decoration: none;
+    border-radius: 5px;
+    border: none;
+    padding: 5px 15px;
 }
 .alert {
     background-color: red;
@@ -20,6 +55,7 @@ body {
 }
 .choice_text{
     color: white;
+    font-size: 20px;
 }
 .log_button {
     background-color: #e0e7fb;
@@ -34,7 +70,7 @@ body {
     right: 0;
     text-decoration: none;
 }
-.log_button:hover {
+.log_button:hover, .button:hover, .result_button:hover {
     background-color: #7494ec;
     transition: 0.1s;
 }
@@ -46,10 +82,7 @@ body {
     text-align: center;
     border-radius: 5px;
     margin: 10px;
-}
-.button:hover {
-    background-color: #7494ec;
-    transition: 0.1s;
+    text-decoration: none;
 }
 .confirm_text {
     background-color: red;
@@ -62,7 +95,7 @@ body {
 }
 .status {
     font-weight: bold;
-    color: white;
+    color: black;
     margin-left: 10px;
 }
 table, th, td {

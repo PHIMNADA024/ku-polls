@@ -32,7 +32,9 @@
             <label class="choice_text" for="choice{{ forloop.counter }}">{{ choice.choice_text }}</label><br>
         {% endfor %}
     </div>
-    <button type="submit" class="button">Vote</button>
-    <a href="{% url 'polls:index' %}">Back to List of Polls</a>
-    <a href="{% url 'polls:results' question.id %}">Results</a>
+    <div style="margin-top: 10px;">
+        <button type="submit" class="button">Vote</button>
+        <a href="{% url 'polls:index' %}" class="button">Back to List of Polls</a>
+        <a href="{% url 'polls:results' question.id %}" class="button">Results</a>
+    </div>
 </form>
