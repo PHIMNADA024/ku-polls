@@ -1,4 +1,6 @@
 ## KU Polls: Online Survey Questions 
+[![Run unit tests](https://github.com/PHIMNADA024/ku-polls/actions/workflows/run_unittests.yml/badge.svg)](https://github.com/PHIMNADA024/ku-polls/actions/workflows/run_unittests.yml)
+
 
 An application to conduct online polls and surveys based
 on the [Django Tutorial project](https://docs.djangoproject.com/en/5.1/intro/tutorial01/), with
