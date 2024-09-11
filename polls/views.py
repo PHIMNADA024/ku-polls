@@ -22,13 +22,13 @@ class IndexView(generic.ListView):
 
     def get_queryset(self):
         """
-        Return the last five published questions
+        Return the published questions
         (not including those set to be published in the future).
         """
         published_question_list = [q.pk for q in Question.objects.all()
                                    if q.is_published()]
         published_questions = Question.objects.filter(pk__in=published_question_list)
-        sorted_questions = published_questions.order_by('-pub_date')[:5]
+        sorted_questions = published_questions.order_by('-pub_date')
         return sorted_questions
 
     def get_context_data(self, **kwargs):
