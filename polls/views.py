@@ -143,6 +143,7 @@ def vote(request, question_id):
         # does not have a vote yet
         Vote.objects.create(user=this_user, choice=selected_choice)
         # automatically saved
+        logger.info(f'{this_user} voted for Choice {selected_choice.id} in Question {question.id} from {ip_address}')
         messages.success(request, f"You voted for '{selected_choice.choice_text}'")
 
     return HttpResponseRedirect(reverse('polls:results',
