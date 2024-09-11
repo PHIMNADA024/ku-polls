@@ -38,6 +38,12 @@ Once you're finished, deactivate the virtual environment by running:
 ``` 
 deactivate
 ```
+## Demo Users
+| Username | Password |
+|:--------:|----------|
+|  demo1   | hackme11 |
+|  demo2   | hackme22 |
+|  demo3   | hackme33 |
 
 ## Project Documents
 
