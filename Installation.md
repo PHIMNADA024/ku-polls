@@ -40,20 +40,24 @@ Open the ```.env``` file in a text editor and update the variables as needed.
 ```
 python manage.py migrate
 ```
-### 9. Load KU Polls Data into the Database
-* For Questions and Choices:
+### 9. Run Tests to Verify Installation
+```
+python manage.py test polls
+```
+### 10. Load KU Polls Data into the Database
+1. For Questions and Choices:
 ```
 python manage.py loaddata data/polls-v4.json
 ```
-* For Votes:
-```
-python manage.py loaddata data/votes-v4.json
-```
-* For User data:
+2. For User data:
 ```
 python manage.py loaddata data/users.json
 ```
-* Or load all data files in one command:
+3. For Votes:
+```
+python manage.py loaddata data/votes-v4.json
+```
+Or load all data files in one command:
 ```
 python manage.py loaddata data/polls-v4.json data/votes-v4.json data/users.json
 ```
