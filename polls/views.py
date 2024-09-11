@@ -1,6 +1,4 @@
-"""
-This file contains views for handling polling functionality in KU Polls.
-"""
+"""Views for handling polling functionality in KU Polls."""
 from django.contrib import messages
 from django.http import HttpResponseRedirect, Http404
 from django.shortcuts import get_object_or_404, render
@@ -14,27 +12,21 @@ import logging
 
 
 class IndexView(generic.ListView):
-    """
-    View that displays a list of the latest published questions.
-    """
+    """Displays a list of the latest published questions."""
+
     template_name = 'polls/index.html'
     context_object_name = 'latest_question_list'
 
     def get_queryset(self):
-        """
-        Return the published questions
-        (not including those set to be published in the future).
-        """
+        """Return published questions, excluding future ones."""
         published_question_list = [q.pk for q in Question.objects.all()
                                    if q.is_published()]
-        published_questions = Question.objects.filter(pk__in=published_question_list)
-        sorted_questions = published_questions.order_by('-pub_date')
-        return sorted_questions
+        published_questions = (Question.objects.filter
+                               (pk__in=published_question_list))
+        return published_questions.order_by('-pub_date')
 
     def get_context_data(self, **kwargs):
-        """
-        Add the status of each question to the context.
-        """
+        """Add question status to the context."""
         context = super().get_context_data(**kwargs)
         for question in context['latest_question_list']:
             question.status = 'Open' if question.can_vote() else 'Closed'
@@ -42,27 +34,23 @@ class IndexView(generic.ListView):
 
 
 class DetailView(generic.DetailView):
-    """
-    View that displays details of a specific question.
-    """
+    """Displays details of a specific question."""
+
     model = Question
     template_name = 'polls/detail.html'
 
     def get_queryset(self):
-        """
-        Excludes any questions that aren't published yet.
-        """
+        """Exclude unpublished questions."""
         published_question_list = [q.pk for q in Question.objects.all()
                                    if q.is_published()]
         return Question.objects.filter(pk__in=published_question_list)
 
     def get(self, request, *args, **kwargs):
         """
-        Handle GET requests for the detail view of a question.
+        Handle GET requests for question details.
 
-        If the question cannot be voted on, the user is redirected to the
-        index page with an error message. If the user is authenticated, their
-        last vote for the question is shown, if available.
+        Redirect to index if voting is not allowed.
+        Show last vote if authenticated.
         """
         try:
             question = self.get_object()
@@ -78,23 +66,22 @@ class DetailView(generic.DetailView):
         last_vote = None
         if this_user.is_authenticated:
             try:
-                last_vote = Vote.objects.get(user=this_user, choice__question=question).choice.id
+                last_vote = (Vote.objects.get
+                             (user=this_user, choice__question=question).choice.id)
             except Vote.DoesNotExist:
                 last_vote = None
-        return render(request, self.template_name, {'question': question, 'last_vote': last_vote})
+        return render(request, self.template_name,
+                      {'question': question, 'last_vote': last_vote})
 
 
 class ResultsView(generic.DetailView):
-    """
-    View that displays the results for a specific question.
-    """
+    """Displays the results for a specific question."""
+
     model = Question
     template_name = 'polls/results.html'
 
     def get_queryset(self):
-        """
-        Excludes any questions that aren't published yet.
-        """
+        """Exclude unpublished questions."""
         published_question_list = [q.pk for q in Question.objects.all()
                                    if q.is_published()]
         return Question.objects.filter(pk__in=published_question_list)
@@ -115,9 +102,7 @@ logger = logging.getLogger('polls')
 
 @login_required
 def vote(request, question_id):
-    """
-    Handle voting for a specific question.
-    """
+    """Handle voting for a specific question."""
     question = get_object_or_404(Question, pk=question_id)
     this_user = request.user
     ip_address = get_client_ip(request)
@@ -125,7 +110,8 @@ def vote(request, question_id):
     try:
         selected_choice = question.choice_set.get(pk=request.POST['choice'])
     except (KeyError, Choice.DoesNotExist):
-        logger.warning(f"{this_user} failed to vote in {question} from {ip_address}")
+        logger.warning(f"{this_user} failed to vote in {question} "
+                       f"from {ip_address}")
         return render(request, 'polls/detail.html', {
             'question': question,
             'error_message': "You didn't select a choice.",
@@ -137,41 +123,38 @@ def vote(request, question_id):
         # user has a vote for this question! Update his choice.
         user_vote.choice = selected_choice
         user_vote.save()
-        logger.info(f'{this_user} voted for Choice {selected_choice.id} in Question {question.id} from {ip_address}')
-        messages.success(request, f"Your vote was updated to '{selected_choice.choice_text}'")
+        logger.info(f'{this_user} voted for Choice {selected_choice.id} '
+                    f'in Question {question.id} from {ip_address}')
+        messages.success(request, f"Your vote was updated to "
+                                  f"'{selected_choice.choice_text}'")
     except Vote.DoesNotExist:
         # does not have a vote yet
         Vote.objects.create(user=this_user, choice=selected_choice)
         # automatically saved
-        logger.info(f'{this_user} voted for Choice {selected_choice.id} in Question {question.id} from {ip_address}')
-        messages.success(request, f"You voted for '{selected_choice.choice_text}'")
+        logger.info(f'{this_user} voted for Choice {selected_choice.id} '
+                    f'in Question {question.id} from {ip_address}')
+        messages.success(request, f"You voted for "
+                                  f"'{selected_choice.choice_text}'")
 
-    return HttpResponseRedirect(reverse('polls:results',
-                                        args=(question_id,)))
+    return HttpResponseRedirect(reverse('polls:results', args=(question_id,)))
 
 
 @receiver(user_logged_in)
 def log_user_login(request, user, **kwargs):
-    """
-    Log a message when a user successfully logs in.
-    """
+    """Log a message when a user successfully logs in."""
     ip_address = get_client_ip(request)
     logger.info(f'{user} logged in from {ip_address}')
 
 
 @receiver(user_logged_out)
 def log_user_logout(request, user, **kwargs):
-    """
-    Log a message when a user successfully logs out.
-    """
+    """Log a message when a user successfully logs out."""
     ip_address = get_client_ip(request)
     logger.info(f'{user} logged out from {ip_address}')
 
 
 @receiver(user_login_failed)
 def log_user_login_failed(request, **kwargs):
-    """
-    Log a message when a user login attempt fails.
-    """
+    """Log a message when a user login attempt fails."""
     ip_address = get_client_ip(request)
     logger.warning(f'User failed to log in from {ip_address}')
