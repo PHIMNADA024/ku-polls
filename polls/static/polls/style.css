@@ -1,3 +1,7 @@
+* {
+    font-size: 100%;
+    font-family: "Times New Roman", serif;
+}
 h1 {
     color: white;
     font-size: 50px;
@@ -43,6 +47,7 @@ body {
     border-radius: 5px;
     border: none;
     padding: 5px 15px;
+    cursor: pointer;
 }
 .alert {
     background-color: red;
@@ -69,6 +74,7 @@ body {
     top: 0;
     right: 0;
     text-decoration: none;
+    cursor: pointer;
 }
 .log_button:hover, .button:hover, .result_button:hover {
     background-color: #7494ec;
@@ -83,6 +89,7 @@ body {
     border-radius: 5px;
     margin: 10px;
     text-decoration: none;
+    cursor: pointer;
 }
 .confirm_text {
     background-color: red;

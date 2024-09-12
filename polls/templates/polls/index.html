@@ -19,7 +19,9 @@
             <button type="submit" class="log_button">Log Out</button>
         </form>
     {% else %}
-        <a href="{% url 'login' %}?next={{request.path}}" class="log_button">Log in</a>
+        <form action="{% url 'login' %}?next={{request.path}}" method="get">
+            <button type="submit" class="log_button">Log In</button>
+        </form>
     {% endif %}
 </div>
 
